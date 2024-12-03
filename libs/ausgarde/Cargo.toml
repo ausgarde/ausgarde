@@ -1,0 +1,20 @@
+[package]
+name = "ausgarde"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+
+[features]
+default = []
+database = ["dep:tokio-postgres", "dep:deadpool-postgres"]
+
+[dependencies]
+tracing = "0.1.41"
+jsonwebtoken = "9.3.0"
+serde = {version = "1.0.215", features = ["derive"]}
+serde_json = "1.0.133"
+chrono = {version = "0.4.38", features = ["serde"]}
+
+# Database Feature
+tokio-postgres = { version = "0.7.12", optional = true }
+deadpool-postgres = { version = "0.14.0", optional = true }
