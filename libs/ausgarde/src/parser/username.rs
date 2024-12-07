@@ -22,7 +22,7 @@ impl Parser for Username {
         let data = data.as_ref();
         let len = data.len();
 
-        if len > USERNAME_MAX_LENGTH || len < USERNAME_MIN_LENGTH {
+        if !(USERNAME_MIN_LENGTH..=USERNAME_MAX_LENGTH).contains(&len) {
             return false;
         }
 
@@ -49,7 +49,7 @@ impl Username {
 impl<'de> Deserialize<'de> for Username {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
-        D: Deserializer<'de>
+        D: Deserializer<'de>,
     {
         let s = String::deserialize(deserializer)?;
         Username::new(&s).ok_or(serde::de::Error::custom("Invalid username"))

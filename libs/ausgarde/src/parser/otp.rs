@@ -24,7 +24,10 @@ impl<const LEN: usize, const DIGITS: bool, const ALPHABETIC: bool> Parser
         }
 
         for c in data.chars() {
-            if (!DIGITS && c.is_ascii_digit()) || (!ALPHABETIC && c.is_alphabetic()) {
+            if (!DIGITS && c.is_ascii_digit())
+                || (!ALPHABETIC && c.is_alphabetic())
+                || (!c.is_ascii_digit() && !c.is_alphabetic())
+            {
                 return false;
             }
         }
@@ -56,5 +59,26 @@ impl<'de, const A: usize, const B: bool, const C: bool> Deserialize<'de> for Otp
         let s = String::deserialize(deserializer)?;
 
         Otp::new(&s).ok_or(serde::de::Error::custom("Invalid Otp"))
+    }
+}
+
+// Write me some tests using the `Otp` struct
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn valid() {
+        assert!(Otp::<6, true, true>::valid("123456"));
+        assert!(Otp::<6, true, true>::valid("abcdef"));
+        assert!(Otp::<6, true, true>::valid("ABCDEF"));
+        assert!(Otp::<6, true, true>::valid("aBcDeF"));
+        assert!(!Otp::<6, true, true>::valid("12345"));
+        assert!(!Otp::<6, true, true>::valid("1234567"));
+        assert!(!Otp::<6, true, true>::valid("12345!"));
+        assert!(!Otp::<6, true, true>::valid("12345 "));
+        assert!(!Otp::<6, true, true>::valid("12345\n"));
+        assert!(!Otp::<6, true, true>::valid("12345\t"));
+        assert!(!Otp::<6, true, true>::valid("12345\r"));
     }
 }

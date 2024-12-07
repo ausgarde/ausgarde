@@ -1,9 +1,7 @@
 use crate::parser::Parser;
 use argon2::{
-    password_hash::{
-        PasswordHash, PasswordHasher, PasswordVerifier, SaltString
-    },
-    Argon2
+    password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
+    Argon2,
 };
 use rand_core::OsRng;
 use serde::{Deserialize, Deserializer};
@@ -28,7 +26,7 @@ impl Parser for Password {
         let data = data.as_ref();
         let len = data.len();
 
-        if len < PASSWORD_MIN_LENGTH || len > PASSWORD_MAX_LENGTH {
+        if !(PASSWORD_MIN_LENGTH..=PASSWORD_MAX_LENGTH).contains(&len) {
             return false;
         }
 
@@ -71,6 +69,7 @@ impl Password {
         None
     }
 
+    /// Consumes `self` and hashes the Password with the Default parameters.
     pub fn to_argon2_hash(self) -> argon2::password_hash::Result<String> {
         let salt = SaltString::generate(&mut OsRng);
 
@@ -96,5 +95,28 @@ impl<'de> Deserialize<'de> for Password {
         let data = String::deserialize(deserializer)?;
 
         Password::new(&data).ok_or(serde::de::Error::custom("Invalid password"))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn valid() {
+        for p in [
+            "1Zwei3%padding",
+            "Spaces?? 123456789",
+            "🦀🦀🦀🦀Crab🦀 123 🦀Crab🦀🦀🦀🦀",
+        ] {
+            assert!(Password::valid(&p));
+        }
+    }
+
+    #[test]
+    fn invalid() {
+        for p in ["invalid:(", "short", "123%no"] {
+            assert!(!Password::valid(&p));
+        }
     }
 }
