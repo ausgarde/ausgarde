@@ -1,0 +1,26 @@
+services:
+  postgresql-dev:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_DB: ausgarde_dev
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  dragonfly-dev:
+    image: "docker.dragonflydb.io/dragonflydb/dragonfly"
+    restart: always
+    ulimits:
+      memlock: -1
+    ports:
+      - "6379:6379"
+    volumes:
+      - dragonflydata:/data
+
+volumes:
+  postgres_data:
+  dragonflydata:
