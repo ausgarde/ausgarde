@@ -9,7 +9,8 @@ CREATE TABLE ausgarde.domain_manager (
 	created_at TIMESTAMP NOT NULL DEFAULT NOW(),
 	updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
 	email_verification_code TEXT,
-	email_verified BOOLEAN NOT NULL DEFAULT FALSE
+	email_verified BOOLEAN NOT NULL DEFAULT FALSE,
+	email_verified_at TIMESTAMP
 );
 CREATE TABLE ausgarde.domain (
 	id UUID PRIMARY KEY,
@@ -59,7 +60,8 @@ CREATE TABLE ausgarde.session (
 	ip_addr INET NOT NULL,
 	country TEXT NOT NULL,
 	user_agent TEXT NOT NULL,
-	domain_id UUID NOT NULL REFERENCES ausgarde.domain(id) ON DELETE CASCADE,
+	-- If null, then it's a global session.
+	domain_id UUID REFERENCES ausgarde.domain(id) ON DELETE CASCADE,
 	created_at TIMESTAMP NOT NULL DEFAULT NOW(),
 	updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
