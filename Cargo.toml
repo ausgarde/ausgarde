@@ -1,7 +1,13 @@
+cargo-features = ["codegen-backend"]
+
 [package]
 name = "ausgarde-server"
 version = "0.1.0"
 edition = "2021"
+
+
+[profile.dev]
+codegen-backend = "cranelift"
 
 [workspace]
 members = ["libs/*"]
