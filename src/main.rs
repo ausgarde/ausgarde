@@ -2,9 +2,11 @@ use actix_web::{web::Data, HttpServer};
 use ausgarde::common::config;
 use std::io;
 
+pub mod error;
 pub mod routes;
 
 pub type Pool = Data<deadpool_postgres::Pool>;
+pub type ApiResult<T> = Result<T, error::ApiError>;
 
 #[actix_web::main]
 async fn main() -> io::Result<()> {

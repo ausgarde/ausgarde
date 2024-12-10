@@ -6,7 +6,7 @@ use ausgarde::{
 use nanoid::nanoid;
 use uuid::Uuid;
 
-use crate::Pool;
+use crate::{error::ApiError, ApiResult, Pool};
 
 #[derive(serde::Deserialize)]
 pub struct SignupRequest {
@@ -16,9 +16,9 @@ pub struct SignupRequest {
 }
 
 #[post("/signup")]
-pub async fn signup(data: Json<SignupRequest>, pool: Pool) -> HttpResponse {
+pub async fn signup(data: Json<SignupRequest>, pool: Pool) -> ApiResult<HttpResponse> {
     let data = data.into_inner();
-    let con = pool.get().await.unwrap();
+    let con = pool.get().await?;
 
     let row = con
         .query_opt(
@@ -34,9 +34,8 @@ pub async fn signup(data: Json<SignupRequest>, pool: Pool) -> HttpResponse {
                 &nanoid!(128),
             ],
         )
-        .await
-        .unwrap()
-        .unwrap(); // TODO: create a error enum, and use `ok_or` instead of `unwrap`
+        .await?
+        .ok_or(ApiError::ConflictError("email already exists".to_string()))?;
 
     let id: Uuid = row.get("id");
     let email_verification_token: String = row.get("email_verification_code");
@@ -54,5 +53,5 @@ pub async fn signup(data: Json<SignupRequest>, pool: Pool) -> HttpResponse {
 
     // TODO: send email to the user with the token
 
-    HttpResponse::Ok().finish()
+    Ok(HttpResponse::Ok().finish())
 }
