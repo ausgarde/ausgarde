@@ -1,7 +1,8 @@
-pub mod password;
 pub mod email;
-pub mod username;
+pub mod id;
 pub mod otp;
+pub mod password;
+pub mod username;
 
 pub trait Parser {
     fn from_unchecked<S>(data: S) -> Self

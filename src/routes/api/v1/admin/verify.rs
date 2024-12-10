@@ -1,11 +1,13 @@
 use crate::{ApiResult, Pool};
 use actix_web::{post, web::Path, HttpResponse};
-use ausgarde::token::{
-    jwt::{jsonwebtoken::Validation, JwtBuilder},
-    TokenGenerator,
+use ausgarde::{
+    parser::id::UserId,
+    token::{
+        jwt::{jsonwebtoken::Validation, JwtBuilder},
+        TokenGenerator,
+    },
 };
 use std::str::FromStr;
-use uuid::Uuid;
 
 #[post("/verify/{token}")]
 pub async fn verify(path: Path<String>, pool: Pool) -> ApiResult<HttpResponse> {
@@ -21,16 +23,19 @@ pub async fn verify(path: Path<String>, pool: Pool) -> ApiResult<HttpResponse> {
     let row = con
         .execute(
             r"
-			UPDATE ausgarde.domain_manager
-			SET 
-				email_verified = true,
-				email_verified_at = now(),
-				email_verification_code = null
-			WHERE id = $1 AND email_verification_code = $2
+		WITH updated_user AS (
+			UPDATE ausgarde.users
+			SET email_verified = TRUE
+			WHERE id = $1
+			RETURNING id
+		)
+		DELETE FROM ausgarde.email_requests
+		WHERE
+			user_id = $1 AND type = 'email_verification' AND code = $2;	
 			",
             &[
                 // Cursed code, don't do this in production
-                &Uuid::from_str(&token.sub.unwrap()).unwrap(),
+                &UserId::from_str(&token.sub.unwrap()).unwrap(),
                 &token.custom["evt"].as_str().unwrap(),
             ],
         )

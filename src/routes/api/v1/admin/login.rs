@@ -1,5 +1,4 @@
-use std::net::IpAddr;
-
+use crate::{error::ApiError, ApiResult, Pool};
 use actix_web::{post, web::Json, HttpResponse};
 use ausgarde::{
     parser::{email::Email, password::Password},
@@ -7,9 +6,8 @@ use ausgarde::{
 };
 use nanoid::nanoid;
 use serde_json::json;
+use std::net::IpAddr;
 use uuid::Uuid;
-
-use crate::{error::ApiError, ApiResult, Pool};
 
 #[derive(serde::Deserialize)]
 pub struct LoginRequest {
@@ -24,7 +22,22 @@ pub async fn login(data: Json<LoginRequest>, pool: Pool) -> ApiResult<HttpRespon
 
     let row = con
         .query_opt(
-            r"SELECT id, password, email_verified FROM ausgarde.domain_manager WHERE email = $1",
+            r"
+				SELECT
+					id,
+					password,
+					email_verified
+				FROM
+					ausgarde.users
+				WHERE
+					email = $1
+				AND
+					(SELECT 1 FROM
+						ausgarde.email_requests
+					WHERE user_id = ausgarde.users.id
+					AND type = 'email_verification'::public.request_type)
+					IS NULL
+					",
             &[&data.email.0],
         )
         .await?
@@ -33,6 +46,10 @@ pub async fn login(data: Json<LoginRequest>, pool: Pool) -> ApiResult<HttpRespon
     let id: Uuid = row.get("id");
     let password: String = row.get("password");
     let email_verified: bool = row.get("email_verified");
+
+    if !data.password.verify_password(&password).unwrap() {
+        return Err(ApiError::NotFoundError("user not found".to_string()));
+    }
 
     if !email_verified {
         // This token is used to request a new email verification token
@@ -53,16 +70,12 @@ pub async fn login(data: Json<LoginRequest>, pool: Pool) -> ApiResult<HttpRespon
         })));
     }
 
-    if !data.password.verify_password(&password).unwrap() {
-        return Err(ApiError::NotFoundError("user not found".to_string()));
-    }
-
     let session_id = nanoid!(128);
 
     if con
         .execute(
             r"INSERT INTO
-				ausgarde.session (id, manager_id, ip_addr, country, user_agent)
+				ausgarde.sessions (id, user_id, ip_addr, country, user_agent)
 			VALUES ($1, $2, $3, $4, $5)",
             &[
                 &session_id,

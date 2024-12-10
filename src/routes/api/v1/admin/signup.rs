@@ -1,12 +1,10 @@
+use crate::{error::ApiError, ApiResult, Pool};
 use actix_web::{post, web::Json, HttpResponse};
 use ausgarde::{
-    parser::{email::Email, password::Password},
+    parser::{email::Email, id::UserId, password::Password},
     token::{jwt::JwtBuilder, DateTimeUtc, TokenGenerator},
 };
 use nanoid::nanoid;
-use uuid::Uuid;
-
-use crate::{error::ApiError, ApiResult, Pool};
 
 #[derive(serde::Deserialize)]
 pub struct SignupRequest {
@@ -20,28 +18,40 @@ pub async fn signup(data: Json<SignupRequest>, pool: Pool) -> ApiResult<HttpResp
     let data = data.into_inner();
     let con = pool.get().await?;
 
-    let row = con
+    let user_id = UserId::new();
+    let email_verification_token = nanoid!(128);
+
+    _ = con
         .query_opt(
             r"
-		INSERT INTO ausgarde.domain_manager (id, name, email, password, email_verification_code)
-		VALUES (uuid_generate_v4(), $1, $2, $3, $4) ON CONFLICT (email) DO NOTHING
-		RETURNING id, email_verification_code
+			WITH inserted_user AS (
+			INSERT INTO ausgarde.users (
+					id,
+					name,
+					email,
+					password
+				)
+				VALUES ($1, $2, $3, $4)
+				ON CONFLICT (email) DO NOTHING
+				RETURNING id
+			)
+			INSERT INTO ausgarde.email_requests (user_id, type, code)
+			SELECT id, 'email_verification'::public.request_type, $5
+			FROM inserted_user RETURNING user_id;
 		",
             &[
+                &user_id,
                 &data.name,
                 &data.email.0,
                 &data.password.to_argon2_hash().unwrap(),
-                &nanoid!(128),
+                &email_verification_token,
             ],
         )
         .await?
         .ok_or(ApiError::ConflictError("email already exists".to_string()))?;
 
-    let id: Uuid = row.get("id");
-    let email_verification_token: String = row.get("email_verification_code");
-
     let token = JwtBuilder::new()
-        .sub(id.to_string())
+        .sub(user_id.to_string())
         .iat(DateTimeUtc::now())
         .exp(DateTimeUtc::now_add_1hour())
         .aud(&["ausgarde:email-verification"])
