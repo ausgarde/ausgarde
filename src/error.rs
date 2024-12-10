@@ -11,6 +11,9 @@ pub enum ApiError {
 
     #[error("{0}")]
     ConflictError(String),
+
+    #[error("{0}")]
+    NotFoundError(String),
 }
 
 impl ResponseError for ApiError {
@@ -20,6 +23,7 @@ impl ResponseError for ApiError {
                 actix_web::http::StatusCode::INTERNAL_SERVER_ERROR
             }
             ApiError::ConflictError(_) => actix_web::http::StatusCode::CONFLICT,
+            ApiError::NotFoundError(_) => actix_web::http::StatusCode::NOT_FOUND,
         }
     }
 
@@ -34,6 +38,7 @@ impl ResponseError for ApiError {
                 body["kind"] = json!("DATABASE_ERROR")
             }
             ApiError::ConflictError(_) => body["kind"] = json!("CONFLICT_ERROR"),
+            ApiError::NotFoundError(_) => body["kind"] = json!("NOT_FOUND_ERROR"),
         }
 
         actix_web::HttpResponse::build(self.status_code())
