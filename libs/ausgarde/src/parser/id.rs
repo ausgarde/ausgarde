@@ -7,16 +7,16 @@ use bytes::BytesMut;
 use ulid::Ulid;
 
 #[derive(Debug)]
-pub struct UserId(ulid::Ulid);
+pub struct ObjectId(ulid::Ulid);
 
-impl UserId {
+impl ObjectId {
     #![allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self(ulid::Ulid::new())
     }
 }
 
-impl std::str::FromStr for UserId {
+impl std::str::FromStr for ObjectId {
     type Err = ulid::DecodeError;
 
     fn from_str(value: &str) -> Result<Self, Self::Err> {
@@ -24,18 +24,18 @@ impl std::str::FromStr for UserId {
     }
 }
 
-impl<'de> serde::Deserialize<'de> for UserId {
-    fn deserialize<D>(deserializer: D) -> Result<UserId, D::Error>
+impl<'de> serde::Deserialize<'de> for ObjectId {
+    fn deserialize<D>(deserializer: D) -> Result<ObjectId, D::Error>
     where
         D: serde::Deserializer<'de>,
     {
         let id = Ulid::deserialize(deserializer)?;
 
-        Ok(UserId(id))
+        Ok(ObjectId(id))
     }
 }
 
-impl serde::Serialize for UserId {
+impl serde::Serialize for ObjectId {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
@@ -44,13 +44,13 @@ impl serde::Serialize for UserId {
     }
 }
 
-impl std::fmt::Display for UserId {
+impl std::fmt::Display for ObjectId {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         self.0.fmt(f)
     }
 }
 
-impl<B: AsRef<[u8]>> From<B> for UserId {
+impl<B: AsRef<[u8]>> From<B> for ObjectId {
     fn from(value: B) -> Self {
         let mut bytes = [0u8; 16];
         let reader = value.as_ref();
@@ -64,7 +64,7 @@ impl<B: AsRef<[u8]>> From<B> for UserId {
 }
 
 #[cfg(feature = "database")]
-impl<'a> FromSql<'a> for UserId {
+impl<'a> FromSql<'a> for ObjectId {
     fn from_sql(
         _: &postgres_types::Type,
         raw: &'a [u8],
@@ -78,7 +78,7 @@ impl<'a> FromSql<'a> for UserId {
 }
 
 #[cfg(feature = "database")]
-impl ToSql for UserId {
+impl ToSql for ObjectId {
     fn to_sql(
         &self,
         _: &postgres_types::Type,

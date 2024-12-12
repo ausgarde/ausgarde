@@ -1,7 +1,7 @@
 use crate::{ApiResult, Pool};
 use actix_web::{post, web::Path, HttpResponse};
 use ausgarde::{
-    parser::id::UserId,
+    parser::id::ObjectId,
     token::{
         jwt::{jsonwebtoken::Validation, JwtBuilder},
         TokenGenerator,
@@ -35,7 +35,7 @@ pub async fn verify(path: Path<String>, pool: Pool) -> ApiResult<HttpResponse> {
 			",
             &[
                 // Cursed code, don't do this in production
-                &UserId::from_str(&token.sub.unwrap()).unwrap(),
+                &ObjectId::from_str(&token.sub.unwrap()).unwrap(),
                 &token.custom["evt"].as_str().unwrap(),
             ],
         )

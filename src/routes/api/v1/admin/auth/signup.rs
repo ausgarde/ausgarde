@@ -1,7 +1,7 @@
 use crate::{error::ApiError, ApiResult, Pool};
 use actix_web::{post, web::Json, HttpResponse};
 use ausgarde::{
-    parser::{email::Email, id::UserId, password::Password},
+    parser::{email::Email, id::ObjectId, password::Password},
     token::{jwt::JwtBuilder, DateTimeUtc, TokenGenerator},
 };
 use nanoid::nanoid;
@@ -18,7 +18,7 @@ pub async fn signup(data: Json<SignupRequest>, pool: Pool) -> ApiResult<HttpResp
     let data = data.into_inner();
     let con = pool.get().await?;
 
-    let user_id = UserId::new();
+    let user_id = ObjectId::new();
     let email_verification_token = nanoid!(128);
 
     _ = con
