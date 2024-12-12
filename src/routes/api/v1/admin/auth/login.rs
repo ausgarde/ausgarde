@@ -1,13 +1,12 @@
 use crate::{error::ApiError, ApiResult, Pool};
 use actix_web::{post, web::Json, HttpResponse};
 use ausgarde::{
-    parser::{email::Email, password::Password},
+    parser::{email::Email, id::ObjectId, password::Password},
     token::{jwt::JwtBuilder, DateTimeUtc, TokenGenerator},
 };
 use nanoid::nanoid;
 use serde_json::json;
 use std::net::IpAddr;
-use uuid::Uuid;
 
 #[derive(serde::Deserialize)]
 pub struct LoginRequest {
@@ -43,7 +42,7 @@ pub async fn login(data: Json<LoginRequest>, pool: Pool) -> ApiResult<HttpRespon
         .await?
         .ok_or(ApiError::NotFoundError("user not found".to_string()))?;
 
-    let id: Uuid = row.get("id");
+    let id: ObjectId = row.get("id");
     let password: String = row.get("password");
     let email_verified: bool = row.get("email_verified");
 
