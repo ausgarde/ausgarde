@@ -1,5 +1,6 @@
 use actix_web::{web::Data, HttpServer};
-use ausgarde::common::config;
+use ausgarde::{common::config, token::jwt::jsonwebtoken::Validation};
+use ausgarde_actix::extractor::jwt::JwtValidator;
 use std::io;
 
 pub mod error;
@@ -28,9 +29,17 @@ async fn main() -> io::Result<()> {
 
     tracing::info!("starting server");
 
+    let mut validator = Validation::default();
+
+    validator.set_audience(&["ausgarde:session"]);
+    validator.set_issuer(&["ausgar.de"]);
+
+    let validator = JwtValidator(validator);
+
     HttpServer::new(move || {
         //
         actix_web::App::new()
+            .app_data(Data::new(validator.clone()))
             .app_data(Data::new(pool.clone()))
             .configure(routes::init)
     })

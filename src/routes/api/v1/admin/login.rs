@@ -98,7 +98,8 @@ pub async fn login(data: Json<LoginRequest>, pool: Pool) -> ApiResult<HttpRespon
         .sub(id.to_string())
         .iat(DateTimeUtc::now())
         .exp(DateTimeUtc::now_add_1hour())
-        .aud(&["ausgarde:session", "ausgarde:manager"])
+        .aud(&["ausgarde:session"])
+        .iss(&["ausgar.de"])
         .add_custom(("sid", session_id))
         .encode();
 
