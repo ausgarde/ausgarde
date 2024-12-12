@@ -1,6 +1,9 @@
-use bytes::BytesMut;
+#[cfg(feature = "database")]
 use postgres_types::FromSql;
+#[cfg(feature = "database")]
 use tokio_postgres::types::ToSql;
+
+use bytes::BytesMut;
 use ulid::Ulid;
 
 #[derive(Debug)]
@@ -60,6 +63,7 @@ impl<B: AsRef<[u8]>> From<B> for UserId {
     }
 }
 
+#[cfg(feature = "database")]
 impl<'a> FromSql<'a> for UserId {
     fn from_sql(
         _: &postgres_types::Type,
@@ -73,6 +77,7 @@ impl<'a> FromSql<'a> for UserId {
     }
 }
 
+#[cfg(feature = "database")]
 impl ToSql for UserId {
     fn to_sql(
         &self,
