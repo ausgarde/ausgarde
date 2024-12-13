@@ -100,6 +100,7 @@ pub async fn login(data: Json<LoginRequest>, pool: Pool) -> ApiResult<HttpRespon
         .aud(&["ausgarde:session"])
         .iss(&["ausgar.de"])
         .add_custom(("sid", session_id))
+        .add_custom(("perms", vec!["domain.create"]))
         .encode();
 
     Ok(HttpResponse::Ok().json(json!({

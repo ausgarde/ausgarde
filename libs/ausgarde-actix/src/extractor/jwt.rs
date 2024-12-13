@@ -26,6 +26,33 @@ pub struct JwtValidator(pub Validation);
 /// ```
 pub struct AccessToken(pub JwtBuilder);
 
+impl AccessToken {
+    pub fn has_permissions(&self, permissions: Vec<&str>) -> bool {
+        let perms: Vec<_> = self
+            .0
+            .custom
+            .get("perms")
+            .ok_or(false)
+            .unwrap()
+            .as_array()
+            .ok_or(false)
+            .unwrap()
+            .iter()
+            .map(|v| v.as_str().unwrap())
+            .collect();
+
+        tracing::info!(?perms, ?permissions);
+
+        for perm in permissions {
+            if !perms.contains(&perm) {
+                return false;
+            }
+        }
+
+        true
+    }
+}
+
 impl FromRequest for AccessToken {
     type Error = actix_web::error::Error;
     type Future = Ready<Result<Self, Self::Error>>;

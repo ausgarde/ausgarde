@@ -2,6 +2,7 @@ use crate::{ApiResult, Pool};
 use actix_web::{post, web, HttpResponse};
 use ausgarde::parser::id::ObjectId;
 use ausgarde_actix::extractor::jwt::AccessToken;
+use ausgarde_codegen::protected;
 use serde_json::json;
 use std::str::FromStr;
 
@@ -12,8 +13,9 @@ pub struct CreateDomainRequest {
 }
 
 #[post("/create")]
+#[protected(permissions = "domain.create")]
 pub async fn create_domain(
-    at: AccessToken,
+    token: AccessToken,
     pool: Pool,
     domain: web::Json<CreateDomainRequest>,
 ) -> ApiResult<HttpResponse> {
@@ -37,7 +39,7 @@ pub async fn create_domain(
                 &domain_id,
                 &domain.name,
                 &domain.redirect_uri,
-                &ObjectId::from_str(&at.0.sub.unwrap()).unwrap(),
+                &ObjectId::from_str(&token.0.sub.unwrap()).unwrap(),
             ],
         )
         .await?;
