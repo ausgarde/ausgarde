@@ -41,8 +41,6 @@ impl AccessToken {
             .map(|v| v.as_str().unwrap())
             .collect();
 
-        tracing::info!(?perms, ?permissions);
-
         for perm in permissions {
             if !perms.contains(&perm) {
                 return false;
@@ -90,9 +88,6 @@ impl FromRequest for AccessToken {
                 return ready(Err(e));
             }
         };
-
-        tracing::info!(?token);
-        tracing::info!(?validation);
 
         match JwtBuilder::decode(token, validation) {
             Some(claims) => ready(Ok(AccessToken(claims))),
