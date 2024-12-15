@@ -2,8 +2,6 @@
 use postgres_types::FromSql;
 #[cfg(feature = "database")]
 use tokio_postgres::types::ToSql;
-
-use bytes::BytesMut;
 use ulid::Ulid;
 
 #[derive(Debug)]
@@ -82,7 +80,7 @@ impl ToSql for ObjectId {
     fn to_sql(
         &self,
         _: &postgres_types::Type,
-        out: &mut BytesMut,
+        out: &mut bytes::BytesMut,
     ) -> Result<postgres_types::IsNull, Box<dyn std::error::Error + Sync + Send>>
     where
         Self: Sized,

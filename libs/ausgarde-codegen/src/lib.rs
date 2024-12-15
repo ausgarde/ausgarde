@@ -29,37 +29,6 @@ pub fn protected(args: TokenStream, item: TokenStream) -> TokenStream {
     let fn_block = &input.block;
     let fn_sig = &input.sig;
 
-    // let mut auth_var = None;
-
-    // for stmt in &fn_block.stmts {
-    //     if let syn::Stmt::Local(local) = stmt {
-    //         if let Pat::Type(PatType { ty, .. }) = &local.pat {
-    //             if let Type::Path(path) = &**ty {
-    //                 eprintln!("{:?}", path.path);
-    //                 if path.path.is_ident("AccessToken") {
-    //                     auth_var = Some(local.pat.clone());
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
-
-    // let auth_var = match auth_var {
-    //     Some(var) => var,
-    //     None => {
-    //         return TokenStream::from(
-    //             Error::custom("No variable of type `AccessToken` found").write_errors(),
-    //         )
-    //     }
-    // };
-
-    // let perms = var_name.permissions.iter().map(|p| {
-    //     let p = syn::LitStr::new(p, proc_macro2::Span::call_site());
-    //     quote! {
-    //         #p
-    //     }
-    // });
-
     let perms = var_name.permissions;
 
     let expanded = quote! {
@@ -68,7 +37,7 @@ pub fn protected(args: TokenStream, item: TokenStream) -> TokenStream {
             if token.has_permissions(vec![#(#perms),*]) {
                 #fn_block
             } else {
-                return Ok(HttpResponse::Forbidden().finish());
+                return Ok(actix_web::HttpResponse::Forbidden().finish());
             }
         }
     };
