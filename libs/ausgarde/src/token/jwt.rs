@@ -23,41 +23,55 @@ impl JwtBuilder {
         Self::default()
     }
 
+    /// Set the issuer of the token.
     pub fn iss(&mut self, value: &[&str]) -> &mut Self {
         self.iss = Some(value.iter().map(|x| x.to_string()).collect());
         self
     }
 
+    /// Set the subject of the token.
+    ///
+    /// Most often, this is a id of something, like a user.
     pub fn sub(&mut self, value: impl Into<String>) -> &mut Self {
         self.sub = Some(value.into());
         self
     }
 
+    /// Set the audience of the token.
     pub fn aud(&mut self, value: &[&str]) -> &mut Self {
         self.aud = Some(value.iter().map(|x| x.to_string()).collect());
         self
     }
 
+    /// Set the expiration time of the token.
     pub fn exp(&mut self, value: DateTimeUtc) -> &mut Self {
         self.exp = Some(value);
         self
     }
 
+    /// Set the not before time of the token.
     pub fn nbf(&mut self, value: DateTimeUtc) -> &mut Self {
         self.nbf = Some(value);
         self
     }
 
+    /// Set the issued at time of the token.
     pub fn iat(&mut self, value: DateTimeUtc) -> &mut Self {
         self.iat = Some(value);
         self
     }
 
+    /// Set the JWT ID of the token.
     pub fn jti(&mut self, value: impl Into<String>) -> &mut Self {
         self.jti = Some(value.into());
         self
     }
 
+    /// Add a custom field to the token.
+    ///
+    /// This can be used to add any custom field to the token.
+    /// But be aware that the field name should not conflict with the standard fields,
+    /// as it will be overwritten.
     pub fn add_custom<K, V>(&mut self, field: (K, V)) -> &mut Self
     where
         K: Into<String>,

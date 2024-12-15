@@ -1,6 +1,16 @@
 use crate::parser::Parser;
+use rand_core::{OsRng, RngCore};
 use serde::{Deserialize, Deserializer};
 
+/// A one-time password generator + parser.
+///
+/// # Example
+/// ```no_run
+/// use ausgarde::parser::otp::Otp;
+///
+/// let otp = Otp::<6, true, true>::generate();
+/// ```
+#[derive(Debug, Clone, PartialEq)]
 pub struct Otp<const LEN: usize, const DIGITS: bool, const ALPHABETIC: bool>(String);
 
 impl<const LEN: usize, const DIGITS: bool, const ALPHABETIC: bool> Parser
@@ -36,7 +46,7 @@ impl<const LEN: usize, const DIGITS: bool, const ALPHABETIC: bool> Parser
     }
 }
 
-impl<const A: usize, const B: bool, const C: bool> Otp<A, B, C> {
+impl<const LEN: usize, const DIGITS: bool, const ALPHABETIC: bool> Otp<LEN, DIGITS, ALPHABETIC> {
     pub fn new<S>(data: S) -> Option<Self>
     where
         S: AsRef<str>,
@@ -48,6 +58,29 @@ impl<const A: usize, const B: bool, const C: bool> Otp<A, B, C> {
         }
 
         None
+    }
+
+    pub fn generate() -> Self {
+        let mut rng = OsRng;
+        let mut otp = String::with_capacity(LEN);
+
+        let mut ciphers = vec![];
+
+        if DIGITS {
+            ciphers.extend(b'0'..=b'9');
+        }
+
+        if ALPHABETIC {
+            ciphers.extend(b'a'..=b'z');
+            ciphers.extend(b'A'..=b'Z');
+        }
+
+        for _ in 0..LEN {
+            let idx = rng.next_u32() % ciphers.len() as u32;
+            otp.push(ciphers[idx as usize] as char);
+        }
+
+        Self(otp)
     }
 }
 

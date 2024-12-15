@@ -9,6 +9,10 @@ use serde::{Deserialize, Deserializer};
 pub const PASSWORD_MIN_LENGTH: usize = 8;
 pub const PASSWORD_MAX_LENGTH: usize = 128;
 
+/// A Password type to parse and validate passwords.
+///
+/// Passwords must be between 8 and 128 Characters long, have at least one Uppercase letter and one Special Character.
+/// The Parser, will allow any character, including emojis and whitespace.
 pub struct Password(String);
 
 impl Parser for Password {

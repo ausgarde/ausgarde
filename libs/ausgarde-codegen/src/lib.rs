@@ -10,6 +10,22 @@ struct AuthorizationProtected {
     permissions: Vec<String>,
 }
 
+/// Protects an `actix-web` route with permissions, from a Bearer token.
+///
+/// It is important to add `JwtValidator` to your app_data, in order to use this attribute.
+/// And name the parameter of the function, that you want to protect, `token`.
+///
+/// It will return a `Unautharized` response to the client, if the token is not present or if it is invalid.
+///
+/// # Example
+/// ```no_run
+/// use actix_web::{web, HttpResponse, get};
+///
+/// #[get("/")]
+/// #[protected(permissions = "permission", permissions = "permission2")]
+/// async fn index(token: AccessToken) -> HttpResponse {
+///   HttpResponse::Ok().finish()
+/// }
 #[proc_macro_attribute]
 pub fn protected(args: TokenStream, item: TokenStream) -> TokenStream {
     let attr_args = match NestedMeta::parse_meta_list(args.into()) {

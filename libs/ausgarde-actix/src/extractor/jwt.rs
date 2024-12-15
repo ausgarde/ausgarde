@@ -27,6 +27,21 @@ pub struct JwtValidator(pub Validation);
 pub struct AccessToken(pub JwtBuilder);
 
 impl AccessToken {
+    /// Checks if the token has the required permissions.
+    ///
+    /// # Example
+    /// ```no_run
+    /// use actix_web::{web, HttpResponse, get};
+    ///
+    /// #[get("/")]
+    /// async fn index(token: AccessToken) -> HttpResponse {
+    ///    if token.has_permissions(vec!["permission", "permission2"]) {
+    ///         HttpResponse::Ok().finish()
+    ///    } else {
+    ///         HttpResponse::Forbidden().finish()
+    ///    }
+    /// }
+    /// ```
     pub fn has_permissions(&self, permissions: Vec<&str>) -> bool {
         let perms: Vec<_> = self
             .0

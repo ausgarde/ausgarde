@@ -4,6 +4,16 @@ use postgres_types::FromSql;
 use tokio_postgres::types::ToSql;
 use ulid::Ulid;
 
+/// A wrapper around `ulid::Ulid`.
+///
+/// If you are using the `database` feature, this type will implement `FromSql` and `ToSql` for `tokio-postgres`.
+///
+/// # Example
+/// ```no_run
+/// use ausgarde::parser::ObjectId;
+///
+/// let id = ObjectId::new();
+/// ```
 #[derive(Debug)]
 pub struct ObjectId(ulid::Ulid);
 

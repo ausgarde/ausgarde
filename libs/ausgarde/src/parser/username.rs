@@ -5,6 +5,17 @@ use serde::{Deserialize, Deserializer};
 pub const USERNAME_MIN_LENGTH: usize = 2;
 pub const USERNAME_MAX_LENGTH: usize = 32;
 
+/// A Username type to parse and validate usernames.
+///
+/// Usernames must be between 2 and 32 Characters long, and can only contain the following characters:
+/// - a-z
+/// - A-Z
+/// - 0-9
+/// - . (dot)
+/// - _ (underscore)
+/// - - (dash)
+///
+/// The Parser will not allow consecutive dots, underscores or dashes.
 pub struct Username(pub String);
 
 impl Parser for Username {

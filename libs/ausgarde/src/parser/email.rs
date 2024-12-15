@@ -2,6 +2,19 @@ use crate::parser::Parser;
 use fancy_regex::Regex;
 use serde::{Deserialize, Deserializer};
 
+/// An Email parser used parse and validate email addresses.
+///
+/// This parser is intended to be used with `serde`.
+///
+/// # Example
+/// ```no_run
+/// use ausgarde::parser::Email;
+///
+/// #[derive(serde::Deserialize)]
+/// struct User {
+///    email: Email,
+/// }
+/// ```
 pub struct Email(pub String);
 
 impl Parser for Email {
